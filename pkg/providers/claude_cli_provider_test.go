@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sipeed/picoclaw/pkg/config"
+	"github.com/srikesh3005/summer/pkg/config"
 )
 
 // --- Compile-time interface check ---
@@ -812,6 +812,35 @@ func TestParseClaudeCliResponse_WithToolCalls(t *testing.T) {
 	}
 }
 
+func TestParseClaudeCliResponse_WithTaggedToolCall(t *testing.T) {
+	p := NewClaudeCliProvider("/workspace")
+	output := `{"type":"result","subtype":"success","is_error":false,"result":"I'll update it.\n<append_file>{\"path\":\"/tmp/test.md\",\"content\":\"hello\"}</append_file>\nDone.","session_id":"abc123","total_cost_usd":0.01}`
+
+	resp, err := p.parseClaudeCliResponse(output)
+	if err != nil {
+		t.Fatalf("error = %v", err)
+	}
+	if resp.FinishReason != "tool_calls" {
+		t.Errorf("FinishReason = %q, want %q", resp.FinishReason, "tool_calls")
+	}
+	if len(resp.ToolCalls) != 1 {
+		t.Fatalf("ToolCalls = %d, want 1", len(resp.ToolCalls))
+	}
+	tc := resp.ToolCalls[0]
+	if tc.Name != "append_file" {
+		t.Errorf("Name = %q, want %q", tc.Name, "append_file")
+	}
+	if tc.Arguments["path"] != "/tmp/test.md" {
+		t.Errorf("Arguments[path] = %v, want /tmp/test.md", tc.Arguments["path"])
+	}
+	if strings.Contains(resp.Content, "<append_file>") {
+		t.Errorf("Content should not contain tagged tool call, got %q", resp.Content)
+	}
+	if !strings.Contains(resp.Content, "I'll update it.") || !strings.Contains(resp.Content, "Done.") {
+		t.Errorf("Content should keep surrounding prose, got %q", resp.Content)
+	}
+}
+
 func TestParseClaudeCliResponse_WhitespaceResult(t *testing.T) {
 	p := NewClaudeCliProvider("/workspace")
 	output := `{"type":"result","subtype":"success","is_error":false,"result":"  hello  \n  ","session_id":"s"}`
@@ -918,6 +947,23 @@ func TestExtractToolCalls_ToolCallArgumentsParsing(t *testing.T) {
 	}
 }
 
+func TestExtractToolCalls_WithTaggedToolCall(t *testing.T) {
+	p := NewClaudeCliProvider("/workspace")
+	text := `Thinking...
+<append_file>{"path":"/tmp/out.txt","content":"hi"}</append_file>`
+
+	got := p.extractToolCalls(text)
+	if len(got) != 1 {
+		t.Fatalf("extractToolCalls() = %d, want 1", len(got))
+	}
+	if got[0].Name != "append_file" {
+		t.Errorf("Name = %q, want %q", got[0].Name, "append_file")
+	}
+	if got[0].Arguments["path"] != "/tmp/out.txt" {
+		t.Errorf("Arguments[path] = %v, want /tmp/out.txt", got[0].Arguments["path"])
+	}
+}
+
 // --- stripToolCallsJSON tests ---
 
 func TestStripToolCallsJSON(t *testing.T) {
@@ -953,6 +999,20 @@ func TestStripToolCallsJSON_OnlyToolCalls(t *testing.T) {
 	got := p.stripToolCallsJSON(text)
 	if got != "" {
 		t.Errorf("stripToolCallsJSON() = %q, want empty", got)
+	}
+}
+
+func TestStripTaggedToolCalls(t *testing.T) {
+	p := NewClaudeCliProvider("/workspace")
+	text := `Before
+<append_file>{"path":"/tmp/out","content":"hello"}</append_file>
+After`
+	got := p.stripTaggedToolCalls(text)
+	if strings.Contains(got, "<append_file>") {
+		t.Errorf("stripTaggedToolCalls() should remove tagged call, got %q", got)
+	}
+	if !strings.Contains(got, "Before") || !strings.Contains(got, "After") {
+		t.Errorf("stripTaggedToolCalls() should preserve surrounding text, got %q", got)
 	}
 }
 

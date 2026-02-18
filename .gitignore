@@ -8,13 +8,13 @@ build/
 *.dylib
 *.test
 *.out
-/picoclaw
-/picoclaw-test
+/summer
+/summer-test
 
-# Picoclaw specific
+# Summer specific
 
-# PicoClaw
-.picoclaw/
+# Summer
+.summer/
 config.json
 sessions/
 build/

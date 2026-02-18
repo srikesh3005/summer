@@ -1,0 +1,11 @@
+./base.go
+./dingtalk.go
+./discord.go
+./feishu_64.go
+./line.go
+./maixcam.go
+./manager.go
+./qq.go
+./slack.go
+./telegram.go
+./whatsapp.go

@@ -1,8 +1,8 @@
-// PicoClaw - Ultra-lightweight personal AI agent
+// Summer - Ultra-lightweight personal AI agent
 // Inspired by and based on nanobot: https://github.com/HKUDS/nanobot
 // License: MIT
 //
-// Copyright (c) 2026 PicoClaw contributors
+// Copyright (c) 2026 Summer contributors
 
 package tools
 
@@ -11,9 +11,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/sipeed/picoclaw/pkg/logger"
-	"github.com/sipeed/picoclaw/pkg/providers"
-	"github.com/sipeed/picoclaw/pkg/utils"
+	"github.com/srikesh3005/summer/pkg/logger"
+	"github.com/srikesh3005/summer/pkg/providers"
+	"github.com/srikesh3005/summer/pkg/utils"
 )
 
 // ToolLoopConfig configures the tool execution loop.
@@ -70,6 +70,15 @@ func RunToolLoop(ctx context.Context, config ToolLoopConfig, messages []provider
 					"error":     err.Error(),
 				})
 			return nil, fmt.Errorf("LLM call failed: %w", err)
+		}
+
+		// Recover inline tagged tool calls from providers that don't return
+		// structured tool_calls in API responses.
+		if len(response.ToolCalls) == 0 {
+			if taggedCalls := providers.ExtractTaggedToolCalls(response.Content); len(taggedCalls) > 0 {
+				response.ToolCalls = taggedCalls
+				response.Content = providers.StripTaggedToolCalls(response.Content)
+			}
 		}
 
 		// 4. If no tool calls, we're done

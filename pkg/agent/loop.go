@@ -1,8 +1,8 @@
-// PicoClaw - Ultra-lightweight personal AI agent
+// Summer - Ultra-lightweight personal AI agent
 // Inspired by and based on nanobot: https://github.com/HKUDS/nanobot
 // License: MIT
 //
-// Copyright (c) 2026 PicoClaw contributors
+// Copyright (c) 2026 Summer contributors
 
 package agent
 
@@ -17,15 +17,15 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/sipeed/picoclaw/pkg/bus"
-	"github.com/sipeed/picoclaw/pkg/config"
-	"github.com/sipeed/picoclaw/pkg/constants"
-	"github.com/sipeed/picoclaw/pkg/logger"
-	"github.com/sipeed/picoclaw/pkg/providers"
-	"github.com/sipeed/picoclaw/pkg/session"
-	"github.com/sipeed/picoclaw/pkg/state"
-	"github.com/sipeed/picoclaw/pkg/tools"
-	"github.com/sipeed/picoclaw/pkg/utils"
+	"github.com/srikesh3005/summer/pkg/bus"
+	"github.com/srikesh3005/summer/pkg/config"
+	"github.com/srikesh3005/summer/pkg/constants"
+	"github.com/srikesh3005/summer/pkg/logger"
+	"github.com/srikesh3005/summer/pkg/providers"
+	"github.com/srikesh3005/summer/pkg/session"
+	"github.com/srikesh3005/summer/pkg/state"
+	"github.com/srikesh3005/summer/pkg/tools"
+	"github.com/srikesh3005/summer/pkg/utils"
 )
 
 type AgentLoop struct {
@@ -71,6 +71,9 @@ func createToolRegistry(workspace string, restrict bool, cfg *config.Config, msg
 	registry.Register(tools.NewExecTool(workspace, restrict))
 
 	if searchTool := tools.NewWebSearchTool(tools.WebSearchToolOptions{
+		TavilyAPIKey:         cfg.Tools.Web.Tavily.APIKey,
+		TavilyMaxResults:     cfg.Tools.Web.Tavily.MaxResults,
+		TavilyEnabled:        cfg.Tools.Web.Tavily.Enabled,
 		BraveAPIKey:          cfg.Tools.Web.Brave.APIKey,
 		BraveMaxResults:      cfg.Tools.Web.Brave.MaxResults,
 		BraveEnabled:         cfg.Tools.Web.Brave.Enabled,
@@ -80,6 +83,11 @@ func createToolRegistry(workspace string, restrict bool, cfg *config.Config, msg
 		registry.Register(searchTool)
 	}
 	registry.Register(tools.NewWebFetchTool(50000))
+
+	// Research tools - free APIs for academic research
+	registry.Register(tools.NewDuckDuckGoInstantAnswerTool())
+	registry.Register(tools.NewArXivTool())
+	registry.Register(tools.NewCrossrefTool())
 
 	// Hardware tools (I2C, SPI) - Linux only, returns error on other platforms
 	registry.Register(tools.NewI2CTool())
@@ -97,6 +105,7 @@ func createToolRegistry(workspace string, restrict bool, cfg *config.Config, msg
 		return nil
 	})
 	registry.Register(messageTool)
+	registry.Register(tools.NewMarkdownFileTool(workspace, restrict, msgBus))
 
 	return registry
 }
@@ -111,18 +120,14 @@ func NewAgentLoop(cfg *config.Config, msgBus *bus.MessageBus, provider providers
 	toolsRegistry := createToolRegistry(workspace, restrict, cfg, msgBus)
 
 	// Create subagent manager with its own tool registry
-	subagentManager := tools.NewSubagentManager(provider, cfg.Agents.Defaults.Model, workspace, msgBus)
-	subagentTools := createToolRegistry(workspace, restrict, cfg, msgBus)
-	// Subagent doesn't need spawn/subagent tools to avoid recursion
-	subagentManager.SetTools(subagentTools)
-
-	// Register spawn tool (for main agent)
-	spawnTool := tools.NewSpawnTool(subagentManager)
-	toolsRegistry.Register(spawnTool)
-
-	// Register subagent tool (synchronous execution)
-	subagentTool := tools.NewSubagentTool(subagentManager)
-	toolsRegistry.Register(subagentTool)
+	// TEMPORARILY DISABLED: Groq model has issues with subagent tool format
+	// subagentManager := tools.NewSubagentManager(provider, cfg.Agents.Defaults.Model, workspace, msgBus)
+	// subagentTools := createToolRegistry(workspace, restrict, cfg, msgBus)
+	// subagentManager.SetTools(subagentTools)
+	// spawnTool := tools.NewSpawnTool(subagentManager)
+	// toolsRegistry.Register(spawnTool)
+	// subagentTool := tools.NewSubagentTool(subagentManager)
+	// toolsRegistry.Register(subagentTool)
 
 	sessionsManager := session.NewSessionManager(filepath.Join(workspace, "sessions"))
 
@@ -349,6 +354,17 @@ func (al *AgentLoop) runAgentLoop(ctx context.Context, opts processOptions) (str
 	if !opts.NoHistory {
 		history = al.sessions.GetHistory(opts.SessionKey)
 		summary = al.sessions.GetSummary(opts.SessionKey)
+
+		// Trim history to last 10 messages to avoid exceeding rate limits (Groq 12K TPM)
+		// Keep recent context while relying on summary for older context
+		const maxHistoryMessages = 10
+		if len(history) > maxHistoryMessages {
+			history = history[len(history)-maxHistoryMessages:]
+			// Ensure we don't start with orphaned tool messages
+			for len(history) > 0 && history[0].Role == "tool" {
+				history = history[1:]
+			}
+		}
 	}
 	messages := al.contextBuilder.BuildMessages(
 		history,
@@ -445,8 +461,13 @@ func (al *AgentLoop) runLLMIteration(ctx context.Context, messages []providers.M
 			})
 
 		// Call LLM
+		// Use configured max_tokens (capped for rate-limited providers like Groq)
+		callMaxTokens := al.contextWindow
+		if callMaxTokens <= 0 || callMaxTokens > 4096 {
+			callMaxTokens = 4096
+		}
 		response, err := al.provider.Chat(ctx, messages, providerToolDefs, al.model, map[string]interface{}{
-			"max_tokens":  8192,
+			"max_tokens":  callMaxTokens,
 			"temperature": 0.7,
 		})
 
@@ -457,6 +478,15 @@ func (al *AgentLoop) runLLMIteration(ctx context.Context, messages []providers.M
 					"error":     err.Error(),
 				})
 			return "", iteration, fmt.Errorf("LLM call failed: %w", err)
+		}
+
+		// Some providers/models emit tool calls as inline tagged text instead of
+		// structured tool_calls. Recover them so they execute normally.
+		if len(response.ToolCalls) == 0 {
+			if taggedCalls := providers.ExtractTaggedToolCalls(response.Content); len(taggedCalls) > 0 {
+				response.ToolCalls = taggedCalls
+				response.Content = providers.StripTaggedToolCalls(response.Content)
+			}
 		}
 
 		// Check if no tool calls - we're done
@@ -591,9 +621,9 @@ func (al *AgentLoop) updateToolContexts(channel, chatID string) {
 func (al *AgentLoop) maybeSummarize(sessionKey string) {
 	newHistory := al.sessions.GetHistory(sessionKey)
 	tokenEstimate := al.estimateTokens(newHistory)
-	threshold := al.contextWindow * 75 / 100
+	threshold := al.contextWindow * 50 / 100 // Summarize earlier to avoid rate limits
 
-	if len(newHistory) > 20 || tokenEstimate > threshold {
+	if len(newHistory) > 10 || tokenEstimate > threshold {
 		if _, loading := al.summarizing.LoadOrStore(sessionKey, true); !loading {
 			go func() {
 				defer al.summarizing.Delete(sessionKey)

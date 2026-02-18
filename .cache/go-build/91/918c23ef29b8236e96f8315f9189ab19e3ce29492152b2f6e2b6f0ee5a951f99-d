@@ -1,0 +1,10 @@
+./claude_cli_provider.go
+./claude_provider.go
+./codex_provider.go
+./http_provider.go
+./tagged_tool_calls.go
+./types.go
+./claude_cli_provider_test.go
+./claude_provider_test.go
+./codex_provider_test.go
+./tagged_tool_calls_test.go

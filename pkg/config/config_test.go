@@ -136,6 +136,12 @@ func TestDefaultConfig_WebTools(t *testing.T) {
 	cfg := DefaultConfig()
 
 	// Verify web tools defaults
+	if cfg.Tools.Web.Tavily.MaxResults != 5 {
+		t.Error("Expected Tavily MaxResults 5, got ", cfg.Tools.Web.Tavily.MaxResults)
+	}
+	if cfg.Tools.Web.Tavily.APIKey != "" {
+		t.Error("Tavily API key should be empty by default")
+	}
 	if cfg.Tools.Web.Brave.MaxResults != 5 {
 		t.Error("Expected Brave MaxResults 5, got ", cfg.Tools.Web.Brave.MaxResults)
 	}

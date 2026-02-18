@@ -1,0 +1,3 @@
+./config.go
+./migrate.go
+./workspace.go

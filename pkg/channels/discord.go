@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/sipeed/picoclaw/pkg/bus"
-	"github.com/sipeed/picoclaw/pkg/config"
-	"github.com/sipeed/picoclaw/pkg/logger"
-	"github.com/sipeed/picoclaw/pkg/utils"
-	"github.com/sipeed/picoclaw/pkg/voice"
+	"github.com/srikesh3005/summer/pkg/bus"
+	"github.com/srikesh3005/summer/pkg/config"
+	"github.com/srikesh3005/summer/pkg/logger"
+	"github.com/srikesh3005/summer/pkg/utils"
+	"github.com/srikesh3005/summer/pkg/voice"
 )
 
 const (

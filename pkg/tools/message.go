@@ -23,7 +23,7 @@ func (t *MessageTool) Name() string {
 }
 
 func (t *MessageTool) Description() string {
-	return "Send a message to user on a chat channel. Use this when you want to communicate something."
+	return "Send a message to another user or channel. Use this only when you need to send messages to someone other than the person you're currently talking to. For normal conversation, just respond naturally."
 }
 
 func (t *MessageTool) Parameters() map[string]interface{} {

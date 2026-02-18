@@ -1,8 +1,8 @@
-// PicoClaw - Ultra-lightweight personal AI agent
+// Summer - Ultra-lightweight personal AI agent
 // Inspired by and based on nanobot: https://github.com/HKUDS/nanobot
 // License: MIT
 //
-// Copyright (c) 2026 PicoClaw contributors
+// Copyright (c) 2026 Summer contributors
 
 package providers
 
@@ -12,12 +12,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
+	"time"
 
-	"github.com/sipeed/picoclaw/pkg/auth"
-	"github.com/sipeed/picoclaw/pkg/config"
+	"github.com/srikesh3005/summer/pkg/auth"
+	"github.com/srikesh3005/summer/pkg/config"
 )
 
 type HTTPProvider struct {
@@ -104,22 +107,70 @@ func (p *HTTPProvider) Chat(ctx context.Context, messages []Message, tools []Too
 		req.Header.Set("Authorization", "Bearer "+p.apiKey)
 	}
 
-	resp, err := p.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to send request: %w", err)
-	}
-	defer resp.Body.Close()
+	// Retry loop for rate limit (429) errors with exponential backoff
+	const maxRetries = 3
+	var lastErr error
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		if attempt > 0 {
+			// Re-create request body reader for retry
+			req, err = http.NewRequestWithContext(ctx, "POST", p.apiBase+"/chat/completions", bytes.NewReader(jsonData))
+			if err != nil {
+				return nil, fmt.Errorf("failed to create request: %w", err)
+			}
+			req.Header.Set("Content-Type", "application/json")
+			if p.apiKey != "" {
+				req.Header.Set("Authorization", "Bearer "+p.apiKey)
+			}
+		}
+
+		resp, err := p.httpClient.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to send request: %w", err)
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			return nil, fmt.Errorf("failed to read response: %w", err)
+		}
+
+		// Handle rate limiting with retry
+		if resp.StatusCode == http.StatusTooManyRequests {
+			waitTime := time.Duration(attempt+1) * 20 * time.Second // 20s, 40s, 60s
+
+			// Try to parse Retry-After header
+			if retryAfter := resp.Header.Get("Retry-After"); retryAfter != "" {
+				if seconds, err := strconv.Atoi(retryAfter); err == nil {
+					waitTime = time.Duration(seconds+2) * time.Second
+				}
+			}
+
+			// Cap max wait at 60 seconds to avoid long freezes
+			const maxWait = 60 * time.Second
+			if waitTime > maxWait {
+				waitTime = maxWait
+			}
+
+			log.Printf("[WARN] Rate limited (429), retrying in %v (attempt %d/%d)", waitTime, attempt+1, maxRetries)
+			lastErr = fmt.Errorf("API request failed:\n  Status: %d\n  Body:   %s", resp.StatusCode, string(body))
+
+			select {
+			case <-time.After(waitTime):
+				continue
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			}
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("API request failed:\n  Status: %d\n  Body:   %s", resp.StatusCode, string(body))
+		}
+
+		return p.parseResponse(body)
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API request failed:\n  Status: %d\n  Body:   %s", resp.StatusCode, string(body))
-	}
-
-	return p.parseResponse(body)
+	return nil, fmt.Errorf("rate limit exceeded after %d retries: %w", maxRetries, lastErr)
 }
 
 func (p *HTTPProvider) parseResponse(body []byte) (*LLMResponse, error) {
@@ -202,7 +253,7 @@ func createClaudeAuthProvider() (LLMProvider, error) {
 		return nil, fmt.Errorf("loading auth credentials: %w", err)
 	}
 	if cred == nil {
-		return nil, fmt.Errorf("no credentials for anthropic. Run: picoclaw auth login --provider anthropic")
+		return nil, fmt.Errorf("no credentials for anthropic. Run: summer auth login --provider anthropic")
 	}
 	return NewClaudeProviderWithTokenSource(cred.AccessToken, createClaudeTokenSource()), nil
 }
@@ -213,7 +264,7 @@ func createCodexAuthProvider() (LLMProvider, error) {
 		return nil, fmt.Errorf("loading auth credentials: %w", err)
 	}
 	if cred == nil {
-		return nil, fmt.Errorf("no credentials for openai. Run: picoclaw auth login --provider openai")
+		return nil, fmt.Errorf("no credentials for openai. Run: summer auth login --provider openai")
 	}
 	return NewCodexProviderWithTokenSource(cred.AccessToken, cred.AccountID, createCodexTokenSource()), nil
 }

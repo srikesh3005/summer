@@ -1,5 +1,5 @@
 # ============================================================
-# Stage 1: Build the picoclaw binary
+# Stage 1: Build the summer binary
 # ============================================================
 FROM golang:1.25.7-alpine AS builder
 
@@ -23,14 +23,14 @@ FROM alpine:3.21
 RUN apk add --no-cache ca-certificates tzdata
 
 # Copy binary
-COPY --from=builder /src/build/picoclaw /usr/local/bin/picoclaw
+COPY --from=builder /src/build/summer /usr/local/bin/summer
 
 # Copy builtin skills
-COPY --from=builder /src/skills /opt/picoclaw/skills
+COPY --from=builder /src/skills /opt/summer/skills
 
-# Create picoclaw home directory
-RUN mkdir -p /root/.picoclaw/workspace/skills && \
-    cp -r /opt/picoclaw/skills/* /root/.picoclaw/workspace/skills/ 2>/dev/null || true
+# Create summer home directory
+RUN mkdir -p /root/.summer/workspace/skills && \
+    cp -r /opt/summer/skills/* /root/.summer/workspace/skills/ 2>/dev/null || true
 
-ENTRYPOINT ["picoclaw"]
+ENTRYPOINT ["summer"]
 CMD ["gateway"]

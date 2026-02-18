@@ -1,7 +1,7 @@
 <div align="center">
-<img src="assets/logo.jpg" alt="PicoClaw" width="512">
+<img src="assets/logo.jpg" alt="Summer" width="512">
 
-<h1>PicoClaw: 基于Go语言的超高效 AI 助手</h1>
+<h1>Summer: 基于Go语言的超高效 AI 助手</h1>
 
 <h3>10$硬件 · 10MB内存 · 1秒启动 · 皮皮虾，我们走！</h3>
 
@@ -10,7 +10,7 @@
     <img src="https://img.shields.io/badge/Arch-x86__64%2C%20ARM64%2C%20RISC--V-blue" alt="Hardware">
     <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
     <br>
-    <a href="https://picoclaw.io"><img src="https://img.shields.io/badge/Website-picoclaw.io-blue?style=flat&logo=google-chrome&logoColor=white" alt="Website"></a>
+    <a href="https://summer.io"><img src="https://img.shields.io/badge/Website-summer.io-blue?style=flat&logo=google-chrome&logoColor=white" alt="Website"></a>
     <a href="https://x.com/SipeedIO"><img src="https://img.shields.io/badge/X_(Twitter)-SipeedIO-black?style=flat&logo=x&logoColor=white" alt="Twitter"></a>
   </p>
 
@@ -19,7 +19,7 @@
 
 ---
 
-🦐 **PicoClaw** 是一个受 [nanobot](https://github.com/HKUDS/nanobot) 启发的超轻量级个人 AI 助手。它采用 **Go 语言** 从零重构，经历了一个“自举”过程——即由 AI Agent 自身驱动了整个架构迁移和代码优化。
+🦐 **Summer** 是一个受 [nanobot](https://github.com/HKUDS/nanobot) 启发的超轻量级个人 AI 助手。它采用 **Go 语言** 从零重构，经历了一个“自举”过程——即由 AI Agent 自身驱动了整个架构迁移和代码优化。
 
 ⚡️ **极致轻量**：可在 **10 美元** 的硬件上运行，内存占用 **<10MB**。这意味着比 OpenClaw 节省 99% 的内存，比 Mac mini 便宜 98%！
 
@@ -27,7 +27,7 @@
 <tr align="center">
 <td align="center" valign="top">
 <p align="center">
-<img src="assets/picoclaw_mem.gif" width="360" height="240">
+<img src="assets/summer_mem.gif" width="360" height="240">
 </p>
 </td>
 <td align="center" valign="top">
@@ -42,18 +42,18 @@
 
 > [!CAUTION]
 > **🚨 SECURITY & OFFICIAL CHANNELS / 安全声明**
-> * **无加密货币 (NO CRYPTO):** PicoClaw **没有** 发行任何官方代币、Token 或虚拟货币。所有在 `pump.fun` 或其他交易平台上的相关声称均为 **诈骗**。
-> * **官方域名:** 唯一的官方网站是 **[picoclaw.io](https://picoclaw.io)**，公司官网是 **[sipeed.com](https://sipeed.com)**。
+> * **无加密货币 (NO CRYPTO):** Summer **没有** 发行任何官方代币、Token 或虚拟货币。所有在 `pump.fun` 或其他交易平台上的相关声称均为 **诈骗**。
+> * **官方域名:** 唯一的官方网站是 **[summer.io](https://summer.io)**，公司官网是 **[sipeed.com](https://sipeed.com)**。
 > * **警惕:** 许多 `.ai/.org/.com/.net/...` 后缀的域名被第三方抢注，请勿轻信。
 > 
 > 
 
 ## 📢 新闻 (News)
 
-2026-02-13 🎉 **PicoClaw 在 4 天内突破 5000 Stars！** 感谢社区的支持！由于正值中国春节假期，PR 和 Issue 涌入较多，我们正在利用这段时间敲定 **项目路线图 (Roadmap)** 并组建 **开发者群组**，以便加速 PicoClaw 的开发。
+2026-02-13 🎉 **Summer 在 4 天内突破 5000 Stars！** 感谢社区的支持！由于正值中国春节假期，PR 和 Issue 涌入较多，我们正在利用这段时间敲定 **项目路线图 (Roadmap)** 并组建 **开发者群组**，以便加速 Summer 的开发。
 🚀 **行动号召：** 请在 GitHub Discussions 中提交您的功能请求 (Feature Requests)。我们将在接下来的周会上进行审查和优先级排序。
 
-2026-02-09 🎉 **PicoClaw 正式发布！** 仅用 1 天构建，旨在将 AI Agent 带入 10 美元硬件与 <10MB 内存的世界。🦐 PicoClaw（皮皮虾），我们走！
+2026-02-09 🎉 **Summer 正式发布！** 仅用 1 天构建，旨在将 AI Agent 带入 10 美元硬件与 <10MB 内存的世界。🦐 Summer（皮皮虾），我们走！
 
 ## ✨ 特性
 
@@ -67,14 +67,14 @@
 
 🤖 **AI 自举**: 纯 Go 语言原生实现 — 95% 的核心代码由 Agent 生成，并经由“人机回环 (Human-in-the-loop)”微调。
 
-|  | OpenClaw | NanoBot | **PicoClaw** |
+|  | OpenClaw | NanoBot | **Summer** |
 | --- | --- | --- | --- |
 | **语言** | TypeScript | Python | **Go** |
 | **RAM** | >1GB | >100MB | **< 10MB** |
 | **启动时间**</br>(0.8GHz core) | >500s | >30s | **<1s** |
 | **成本** | Mac Mini $599 | 大多数 Linux 开发板 ~$50 | **任意 Linux 开发板**</br>**低至 $10** |
 
-<img src="assets/compare.jpg" alt="PicoClaw" width="512">
+<img src="assets/compare.jpg" alt="Summer" width="512">
 
 ## 🦾 演示
 
@@ -87,9 +87,9 @@
 <th><p align="center">🔎 网络搜索与学习</p></th>
 </tr>
 <tr>
-<td align="center"><p align="center"><img src="assets/picoclaw_code.gif" width="240" height="180"></p></td>
-<td align="center"><p align="center"><img src="assets/picoclaw_memory.gif" width="240" height="180"></p></td>
-<td align="center"><p align="center"><img src="assets/picoclaw_search.gif" width="240" height="180"></p></td>
+<td align="center"><p align="center"><img src="assets/summer_code.gif" width="240" height="180"></p></td>
+<td align="center"><p align="center"><img src="assets/summer_memory.gif" width="240" height="180"></p></td>
+<td align="center"><p align="center"><img src="assets/summer_search.gif" width="240" height="180"></p></td>
 </tr>
 <tr>
 <td align="center">开发 • 部署 • 扩展</td>
@@ -100,7 +100,7 @@
 
 ### 🐜 创新的低占用部署
 
-PicoClaw 几乎可以部署在任何 Linux 设备上！
+Summer 几乎可以部署在任何 Linux 设备上！
 
 * $9.9 [LicheeRV-Nano](https://www.aliexpress.com/item/1005006519668532.html) E(网口) 或 W(WiFi6) 版本，用于极简家庭助手。
 * $30~50 [NanoKVM](https://www.aliexpress.com/item/1005007369816019.html)，或 $100 [NanoKVM-Pro](https://www.aliexpress.com/item/1005010048471263.html)，用于自动化服务器运维。
@@ -114,14 +114,14 @@ PicoClaw 几乎可以部署在任何 Linux 设备上！
 
 ### 使用预编译二进制文件安装
 
-从 [Release 页面](https://github.com/sipeed/picoclaw/releases) 下载适用于您平台的固件。
+从 [Release 页面](https://github.com/srikesh3005/summer/releases) 下载适用于您平台的固件。
 
 ### 从源码安装（获取最新特性，开发推荐）
 
 ```bash
-git clone https://github.com/sipeed/picoclaw.git
+git clone https://github.com/srikesh3005/summer.git
 
-cd picoclaw
+cd summer
 make deps
 
 # 构建（无需安装）
@@ -137,12 +137,12 @@ make install
 
 ## 🐳 Docker Compose
 
-您也可以使用 Docker Compose 运行 PicoClaw，无需在本地安装任何环境。
+您也可以使用 Docker Compose 运行 Summer，无需在本地安装任何环境。
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/sipeed/picoclaw.git
-cd picoclaw
+git clone https://github.com/srikesh3005/summer.git
+cd summer
 
 # 2. 设置 API Key
 cp config/config.example.json config/config.json
@@ -152,7 +152,7 @@ vim config/config.json      # 设置 DISCORD_BOT_TOKEN, API keys 等
 docker compose --profile gateway up -d
 
 # 4. 查看日志
-docker compose logs -f picoclaw-gateway
+docker compose logs -f summer-gateway
 
 # 5. 停止
 docker compose --profile gateway down
@@ -163,10 +163,10 @@ docker compose --profile gateway down
 
 ```bash
 # 提问
-docker compose run --rm picoclaw-agent -m "2+2 等于几？"
+docker compose run --rm summer-agent -m "2+2 等于几？"
 
 # 交互模式
-docker compose run --rm picoclaw-agent
+docker compose run --rm summer-agent
 
 ```
 
@@ -181,24 +181,24 @@ docker compose --profile gateway up -d
 ### 🚀 快速开始
 
 > [!TIP]
-> 在 `~/.picoclaw/config.json` 中设置您的 API Key。
+> 在 `~/.summer/config.json` 中设置您的 API Key。
 > 获取 API Key: [OpenRouter](https://openrouter.ai/keys) (LLM) · [Zhipu (智谱)](https://open.bigmodel.cn/usercenter/proj-mgmt/apikeys) (LLM)
 > 网络搜索是 **可选的** - 获取免费的 [Brave Search API](https://brave.com/search/api) (每月 2000 次免费查询)
 
 **1. 初始化 (Initialize)**
 
 ```bash
-picoclaw onboard
+summer onboard
 
 ```
 
-**2. 配置 (Configure)** (`~/.picoclaw/config.json`)
+**2. 配置 (Configure)** (`~/.summer/config.json`)
 
 ```json
 {
   "agents": {
     "defaults": {
-      "workspace": "~/.picoclaw/workspace",
+      "workspace": "~/.summer/workspace",
       "model": "glm-4.7",
       "max_tokens": 8192,
       "temperature": 0.7,
@@ -233,7 +233,7 @@ picoclaw onboard
 **4. 对话 (Chat)**
 
 ```bash
-picoclaw agent -m "2+2 等于几？"
+summer agent -m "2+2 等于几？"
 
 ```
 
@@ -243,7 +243,7 @@ picoclaw agent -m "2+2 等于几？"
 
 ## 💬 聊天应用集成 (Chat Apps)
 
-通过 Telegram, Discord 或钉钉与您的 PicoClaw 对话。
+通过 Telegram, Discord 或钉钉与您的 Summer 对话。
 
 | 渠道 | 设置难度 |
 | --- | --- |
@@ -281,7 +281,7 @@ picoclaw agent -m "2+2 等于几？"
 **3. 运行**
 
 ```bash
-picoclaw gateway
+summer gateway
 
 ```
 
@@ -331,7 +331,7 @@ picoclaw gateway
 **6. 运行**
 
 ```bash
-picoclaw gateway
+summer gateway
 
 ```
 
@@ -366,7 +366,7 @@ picoclaw gateway
 **3. 运行**
 
 ```bash
-picoclaw gateway
+summer gateway
 
 ```
 
@@ -402,7 +402,7 @@ picoclaw gateway
 **3. 运行**
 
 ```bash
-picoclaw gateway
+summer gateway
 
 ```
 
@@ -410,20 +410,20 @@ picoclaw gateway
 
 ## <img src="assets/clawdchat-icon.png" width="24" height="24" alt="ClawdChat"> 加入 Agent 社交网络
 
-只需通过 CLI 或任何集成的聊天应用发送一条消息，即可将 PicoClaw 连接到 Agent 社交网络。
+只需通过 CLI 或任何集成的聊天应用发送一条消息，即可将 Summer 连接到 Agent 社交网络。
 
 **阅读 `https://clawdchat.ai/skill.md` 并按照说明加入 [ClawdChat.ai**](https://clawdchat.ai)
 
 ## ⚙️ 配置详解
 
-配置文件路径: `~/.picoclaw/config.json`
+配置文件路径: `~/.summer/config.json`
 
 ### 工作区布局 (Workspace Layout)
 
-PicoClaw 将数据存储在您配置的工作区中（默认：`~/.picoclaw/workspace`）：
+Summer 将数据存储在您配置的工作区中（默认：`~/.summer/workspace`）：
 
 ```
-~/.picoclaw/workspace/
+~/.summer/workspace/
 ├── sessions/          # 对话会话和历史
 ├── memory/           # 长期记忆 (MEMORY.md)
 ├── state/            # 持久化状态 (最后一次频道等)
@@ -440,7 +440,7 @@ PicoClaw 将数据存储在您配置的工作区中（默认：`~/.picoclaw/work
 
 ### 心跳 / 周期性任务 (Heartbeat)
 
-PicoClaw 可以自动执行周期性任务。在工作区创建 `HEARTBEAT.md` 文件：
+Summer 可以自动执行周期性任务。在工作区创建 `HEARTBEAT.md` 文件：
 
 ```markdown
 # Periodic Tasks
@@ -516,8 +516,8 @@ Agent 读取 HEARTBEAT.md
 
 **环境变量:**
 
-* `PICOCLAW_HEARTBEAT_ENABLED=false` 禁用
-* `PICOCLAW_HEARTBEAT_INTERVAL=60` 更改间隔
+* `SUMMER_HEARTBEAT_ENABLED=false` 禁用
+* `SUMMER_HEARTBEAT_INTERVAL=60` 更改间隔
 
 ### 提供商 (Providers)
 
@@ -547,7 +547,7 @@ Agent 读取 HEARTBEAT.md
 {
   "agents": {
     "defaults": {
-      "workspace": "~/.picoclaw/workspace",
+      "workspace": "~/.summer/workspace",
       "model": "glm-4.7",
       "max_tokens": 8192,
       "temperature": 0.7,
@@ -567,7 +567,7 @@ Agent 读取 HEARTBEAT.md
 **3. 运行**
 
 ```bash
-picoclaw agent -m "你好"
+summer agent -m "你好"
 
 ```
 
@@ -641,23 +641,23 @@ picoclaw agent -m "你好"
 
 | 命令 | 描述 |
 | --- | --- |
-| `picoclaw onboard` | 初始化配置和工作区 |
-| `picoclaw agent -m "..."` | 与 Agent 对话 |
-| `picoclaw agent` | 交互式聊天模式 |
-| `picoclaw gateway` | 启动网关 (Gateway) |
-| `picoclaw status` | 显示状态 |
-| `picoclaw cron list` | 列出所有定时任务 |
-| `picoclaw cron add ...` | 添加定时任务 |
+| `summer onboard` | 初始化配置和工作区 |
+| `summer agent -m "..."` | 与 Agent 对话 |
+| `summer agent` | 交互式聊天模式 |
+| `summer gateway` | 启动网关 (Gateway) |
+| `summer status` | 显示状态 |
+| `summer cron list` | 列出所有定时任务 |
+| `summer cron add ...` | 添加定时任务 |
 
 ### 定时任务 / 提醒 (Scheduled Tasks)
 
-PicoClaw 通过 `cron` 工具支持定时提醒和重复任务：
+Summer 通过 `cron` 工具支持定时提醒和重复任务：
 
 * **一次性提醒**: "Remind me in 10 minutes" (10分钟后提醒我) → 10分钟后触发一次
 * **重复任务**: "Remind me every 2 hours" (每2小时提醒我) → 每2小时触发
 * **Cron 表达式**: "Remind me at 9am daily" (每天上午9点提醒我) → 使用 cron 表达式
 
-任务存储在 `~/.picoclaw/workspace/cron/` 中并自动处理。
+任务存储在 `~/.summer/workspace/cron/` 中并自动处理。
 
 ## 🤝 贡献与路线图 (Roadmap)
 
@@ -671,18 +671,18 @@ PicoClaw 通过 `cron` 工具支持定时提醒和重复任务：
 
 Discord:  [https://discord.gg/V4sAZ9XWpN](https://discord.gg/V4sAZ9XWpN)
 
-<img src="assets/wechat.png" alt="PicoClaw" width="512">
+<img src="assets/wechat.png" alt="Summer" width="512">
 
 ## 🐛 疑难解答 (Troubleshooting)
 
 ### 网络搜索提示 "API 配置问题"
 
-如果您尚未配置搜索 API Key，这是正常的。PicoClaw 会提供手动搜索的帮助链接。
+如果您尚未配置搜索 API Key，这是正常的。Summer 会提供手动搜索的帮助链接。
 
 启用网络搜索：
 
 1. 在 [https://brave.com/search/api](https://brave.com/search/api) 获取免费 API Key (每月 2000 次免费查询)
-2. 添加到 `~/.picoclaw/config.json`:
+2. 添加到 `~/.summer/config.json`:
 ```json
 {
   "tools": {
@@ -705,7 +705,7 @@ Discord:  [https://discord.gg/V4sAZ9XWpN](https://discord.gg/V4sAZ9XWpN)
 
 ### Telegram bot 提示 "Conflict: terminated by other getUpdates"
 
-这表示有另一个机器人实例正在运行。请确保同一时间只有一个 `picoclaw gateway` 进程在运行。
+这表示有另一个机器人实例正在运行。请确保同一时间只有一个 `summer gateway` 进程在运行。
 
 ---
 

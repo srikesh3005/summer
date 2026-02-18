@@ -14,6 +14,9 @@ type OutboundMessage struct {
 	Channel string `json:"channel"`
 	ChatID  string `json:"chat_id"`
 	Content string `json:"content"`
+	// Optional file delivery fields (channel-specific support).
+	FilePath string `json:"file_path,omitempty"`
+	FileName string `json:"file_name,omitempty"`
 }
 
 type MessageHandler func(InboundMessage) error

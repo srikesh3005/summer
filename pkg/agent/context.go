@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sipeed/picoclaw/pkg/logger"
-	"github.com/sipeed/picoclaw/pkg/providers"
-	"github.com/sipeed/picoclaw/pkg/skills"
-	"github.com/sipeed/picoclaw/pkg/tools"
+	"github.com/srikesh3005/summer/pkg/logger"
+	"github.com/srikesh3005/summer/pkg/providers"
+	"github.com/srikesh3005/summer/pkg/skills"
+	"github.com/srikesh3005/summer/pkg/tools"
 )
 
 type ContextBuilder struct {
@@ -26,7 +26,7 @@ func getGlobalConfigDir() string {
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(home, ".picoclaw")
+	return filepath.Join(home, ".summer")
 }
 
 func NewContextBuilder(workspace string) *ContextBuilder {
@@ -56,9 +56,9 @@ func (cb *ContextBuilder) getIdentity() string {
 	// Build tools section dynamically
 	toolsSection := cb.buildToolsSection()
 
-	return fmt.Sprintf(`# picoclaw 🦞
+	return fmt.Sprintf(`# summer 🦞
 
-You are picoclaw, a helpful AI assistant.
+You are summer, a helpful AI assistant.
 
 ## Current Time
 %s
@@ -76,11 +76,13 @@ Your workspace is at: %s
 
 ## Important Rules
 
-1. **ALWAYS use tools** - When you need to perform an action (schedule reminders, send messages, execute commands, etc.), you MUST call the appropriate tool. Do NOT just say you'll do it or pretend to do it.
+1. **Tools for actions** - Use tools when you need to perform actions like scheduling reminders, executing shell commands, reading/writing files, or searching the web. For normal conversation, respond naturally without using tools.
 
-2. **Be helpful and accurate** - When using tools, briefly explain what you're doing.
+2. **Natural conversation** - When chatting normally with users, reply directly in plain text. Your response will automatically be sent to the user. DO NOT wrap your responses in XML tags or JSON format like <message> or {"channel":"telegram"}. Just write naturally.
 
-3. **Memory** - When remembering something, write to %s/memory/MEMORY.md`,
+3. **Be helpful and accurate** - When using tools, briefly explain what you're doing.
+
+4. **Memory** - When remembering something, write to %s/memory/MEMORY.md`,
 		now, runtime, workspacePath, workspacePath, workspacePath, workspacePath, toolsSection, workspacePath)
 }
 
@@ -96,7 +98,6 @@ func (cb *ContextBuilder) buildToolsSection() string {
 
 	var sb strings.Builder
 	sb.WriteString("## Available Tools\n\n")
-	sb.WriteString("**CRITICAL**: You MUST use tools to perform actions. Do NOT pretend to execute commands or schedule tasks.\n\n")
 	sb.WriteString("You have access to the following tools:\n\n")
 	for _, s := range summaries {
 		sb.WriteString(s)

@@ -1,7 +1,7 @@
 {
   "agents": {
     "defaults": {
-      "workspace": "~/.picoclaw/workspace",
+      "workspace": "~/.summer/workspace",
       "restrict_to_workspace": true,
       "model": "glm-4.7",
       "max_tokens": 8192,
@@ -12,9 +12,9 @@
   "channels": {
     "telegram": {
       "enabled": false,
-      "token": "YOUR_TELEGRAM_BOT_TOKEN",
+      "token": "8178227722:AAH5hYT-nrXkFkfpldxmpslf9iGvG0HfXG8",
       "proxy": "",
-      "allow_from": ["YOUR_USER_ID"]
+      "allow_from": ["5974537769"]
     },
     "discord": {
       "enabled": false,
@@ -76,7 +76,7 @@
       "api_base": ""
     },
     "groq": {
-      "api_key": "gsk_xxx",
+      "api_key": "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",
       "api_base": ""
     },
     "zhipu": {
@@ -103,8 +103,18 @@
   },
   "tools": {
     "web": {
-      "search": {
+      "tavily": {
+        "enabled": false,
+        "api_key": "YOUR_TAVILY_API_KEY",
+        "max_results": 5
+      },
+      "brave": {
+        "enabled": false,
         "api_key": "YOUR_BRAVE_API_KEY",
+        "max_results": 5
+      },
+      "duckduckgo": {
+        "enabled": true,
         "max_results": 5
       }
     }

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/sipeed/picoclaw/pkg/config"
+	"github.com/srikesh3005/summer/pkg/config"
 )
 
 var supportedProviders = map[string]bool{
@@ -98,7 +98,7 @@ func ConvertConfig(data map[string]interface{}) (*config.Config, []string, error
 
 			if !supportedProviders[name] {
 				if apiKey != "" || apiBase != "" {
-					warnings = append(warnings, fmt.Sprintf("Provider '%s' not supported in PicoClaw, skipping", name))
+					warnings = append(warnings, fmt.Sprintf("Provider '%s' not supported in Summer, skipping", name))
 				}
 				continue
 			}
@@ -130,7 +130,7 @@ func ConvertConfig(data map[string]interface{}) (*config.Config, []string, error
 				continue
 			}
 			if !supportedChannels[name] {
-				warnings = append(warnings, fmt.Sprintf("Channel '%s' not supported in PicoClaw, skipping", name))
+				warnings = append(warnings, fmt.Sprintf("Channel '%s' not supported in Summer, skipping", name))
 				continue
 			}
 			enabled, _ := getBool(cMap, "enabled")
@@ -279,6 +279,9 @@ func MergeConfig(existing, incoming *config.Config) *config.Config {
 	if existing.Tools.Web.Brave.APIKey == "" {
 		existing.Tools.Web.Brave = incoming.Tools.Web.Brave
 	}
+	if existing.Tools.Web.Tavily.APIKey == "" {
+		existing.Tools.Web.Tavily = incoming.Tools.Web.Tavily
+	}
 
 	return existing
 }
@@ -323,7 +326,7 @@ func convertKeysToSnake(data interface{}) interface{} {
 }
 
 func rewriteWorkspacePath(path string) string {
-	path = strings.Replace(path, ".openclaw", ".picoclaw", 1)
+	path = strings.Replace(path, ".openclaw", ".summer", 1)
 	return path
 }
 

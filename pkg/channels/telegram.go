@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -14,11 +15,11 @@ import (
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 
-	"github.com/sipeed/picoclaw/pkg/bus"
-	"github.com/sipeed/picoclaw/pkg/config"
-	"github.com/sipeed/picoclaw/pkg/logger"
-	"github.com/sipeed/picoclaw/pkg/utils"
-	"github.com/sipeed/picoclaw/pkg/voice"
+	"github.com/srikesh3005/summer/pkg/bus"
+	"github.com/srikesh3005/summer/pkg/config"
+	"github.com/srikesh3005/summer/pkg/logger"
+	"github.com/srikesh3005/summer/pkg/utils"
+	"github.com/srikesh3005/summer/pkg/voice"
 )
 
 type TelegramChannel struct {
@@ -135,6 +136,38 @@ func (c *TelegramChannel) Send(ctx context.Context, msg bus.OutboundMessage) err
 			cf.Cancel()
 		}
 		c.stopThinking.Delete(msg.ChatID)
+	}
+	if _, ok := c.placeholders.Load(msg.ChatID); ok {
+		c.placeholders.Delete(msg.ChatID)
+	}
+
+	// File delivery path (e.g. markdown reports).
+	if msg.FilePath != "" {
+		file, openErr := os.Open(msg.FilePath)
+		if openErr != nil {
+			return fmt.Errorf("failed to open file %q: %w", msg.FilePath, openErr)
+		}
+		defer file.Close()
+
+		fileName := msg.FileName
+		if fileName == "" {
+			fileName = filepath.Base(msg.FilePath)
+		}
+
+		doc := tu.Document(tu.ID(chatID), tu.FileFromReader(file, fileName))
+		// Keep caption simple and short to avoid parse/limit issues.
+		if msg.Content != "" {
+			caption := msg.Content
+			if len(caption) > 900 {
+				caption = caption[:900] + "..."
+			}
+			doc.Caption = caption
+		}
+
+		if _, err = c.bot.SendDocument(ctx, doc); err != nil {
+			return fmt.Errorf("failed to send document: %w", err)
+		}
+		return nil
 	}
 
 	htmlContent := markdownToTelegramHTML(msg.Content)

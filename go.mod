@@ -1,4 +1,4 @@
-module github.com/sipeed/picoclaw
+module github.com/srikesh3005/summer
 
 go 1.25.7
 

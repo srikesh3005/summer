@@ -152,6 +152,7 @@ func (p *ClaudeCliProvider) parseClaudeCliResponse(output string) (*LLMResponse,
 	if len(toolCalls) > 0 {
 		finishReason = "tool_calls"
 		content = p.stripToolCallsJSON(resp.Result)
+		content = p.stripTaggedToolCalls(content)
 	}
 
 	var usage *UsageInfo
@@ -174,50 +175,49 @@ func (p *ClaudeCliProvider) parseClaudeCliResponse(output string) (*LLMResponse,
 // extractToolCalls parses tool call JSON from the response text.
 func (p *ClaudeCliProvider) extractToolCalls(text string) []ToolCall {
 	start := strings.Index(text, `{"tool_calls"`)
-	if start == -1 {
-		return nil
+	if start != -1 {
+		end := findMatchingBrace(text, start)
+		if end == start {
+			return nil
+		}
+
+		jsonStr := text[start:end]
+
+		var wrapper struct {
+			ToolCalls []struct {
+				ID       string `json:"id"`
+				Type     string `json:"type"`
+				Function struct {
+					Name      string `json:"name"`
+					Arguments string `json:"arguments"`
+				} `json:"function"`
+			} `json:"tool_calls"`
+		}
+
+		if err := json.Unmarshal([]byte(jsonStr), &wrapper); err == nil {
+			var result []ToolCall
+			for _, tc := range wrapper.ToolCalls {
+				var args map[string]interface{}
+				json.Unmarshal([]byte(tc.Function.Arguments), &args)
+
+				result = append(result, ToolCall{
+					ID:        tc.ID,
+					Type:      tc.Type,
+					Name:      tc.Function.Name,
+					Arguments: args,
+					Function: &FunctionCall{
+						Name:      tc.Function.Name,
+						Arguments: tc.Function.Arguments,
+					},
+				})
+			}
+			return result
+		}
 	}
 
-	end := findMatchingBrace(text, start)
-	if end == start {
-		return nil
-	}
-
-	jsonStr := text[start:end]
-
-	var wrapper struct {
-		ToolCalls []struct {
-			ID       string `json:"id"`
-			Type     string `json:"type"`
-			Function struct {
-				Name      string `json:"name"`
-				Arguments string `json:"arguments"`
-			} `json:"function"`
-		} `json:"tool_calls"`
-	}
-
-	if err := json.Unmarshal([]byte(jsonStr), &wrapper); err != nil {
-		return nil
-	}
-
-	var result []ToolCall
-	for _, tc := range wrapper.ToolCalls {
-		var args map[string]interface{}
-		json.Unmarshal([]byte(tc.Function.Arguments), &args)
-
-		result = append(result, ToolCall{
-			ID:        tc.ID,
-			Type:      tc.Type,
-			Name:      tc.Function.Name,
-			Arguments: args,
-			Function: &FunctionCall{
-				Name:      tc.Function.Name,
-				Arguments: tc.Function.Arguments,
-			},
-		})
-	}
-
-	return result
+	// Fallback: support XML-like tool syntax such as:
+	// <append_file>{"path":"...","content":"..."}</append_file>
+	return p.extractTaggedToolCalls(text)
 }
 
 // stripToolCallsJSON removes tool call JSON from response text.
@@ -235,13 +235,167 @@ func (p *ClaudeCliProvider) stripToolCallsJSON(text string) string {
 	return strings.TrimSpace(text[:start] + text[end:])
 }
 
+type taggedToolCallSegment struct {
+	start int
+	end   int
+	call  ToolCall
+}
+
+func (p *ClaudeCliProvider) parseTaggedToolCallSegments(text string) []taggedToolCallSegment {
+	var segments []taggedToolCallSegment
+	i := 0
+	for i < len(text) {
+		rel := strings.IndexByte(text[i:], '<')
+		if rel == -1 {
+			break
+		}
+		start := i + rel
+		if start+1 >= len(text) {
+			break
+		}
+
+		// Skip closing tags or invalid tag starts.
+		if text[start+1] == '/' || !isToolTagNameStart(text[start+1]) {
+			i = start + 1
+			continue
+		}
+
+		nameStart := start + 1
+		nameEnd := nameStart
+		for nameEnd < len(text) && isToolTagNameChar(text[nameEnd]) {
+			nameEnd++
+		}
+		if nameEnd >= len(text) || text[nameEnd] != '>' {
+			i = start + 1
+			continue
+		}
+		name := text[nameStart:nameEnd]
+
+		jsonStart := nameEnd + 1
+		for jsonStart < len(text) && isWhitespaceByte(text[jsonStart]) {
+			jsonStart++
+		}
+		if jsonStart >= len(text) || text[jsonStart] != '{' {
+			i = start + 1
+			continue
+		}
+
+		jsonEnd := findMatchingBrace(text, jsonStart)
+		if jsonEnd == jsonStart {
+			i = start + 1
+			continue
+		}
+		rawArgs := text[jsonStart:jsonEnd]
+		var args map[string]interface{}
+		if err := json.Unmarshal([]byte(rawArgs), &args); err != nil {
+			i = start + 1
+			continue
+		}
+
+		segmentEnd := jsonEnd
+		afterJSON := jsonEnd
+		for afterJSON < len(text) && isWhitespaceByte(text[afterJSON]) {
+			afterJSON++
+		}
+		closing := "</" + name + ">"
+		if strings.HasPrefix(text[afterJSON:], closing) {
+			segmentEnd = afterJSON + len(closing)
+		}
+
+		segments = append(segments, taggedToolCallSegment{
+			start: start,
+			end:   segmentEnd,
+			call: ToolCall{
+				ID:        fmt.Sprintf("call_tag_%d", len(segments)+1),
+				Type:      "function",
+				Name:      name,
+				Arguments: args,
+				Function: &FunctionCall{
+					Name:      name,
+					Arguments: rawArgs,
+				},
+			},
+		})
+		i = segmentEnd
+	}
+	return segments
+}
+
+func (p *ClaudeCliProvider) extractTaggedToolCalls(text string) []ToolCall {
+	segments := p.parseTaggedToolCallSegments(text)
+	if len(segments) == 0 {
+		return nil
+	}
+
+	result := make([]ToolCall, 0, len(segments))
+	for _, seg := range segments {
+		result = append(result, seg.call)
+	}
+	return result
+}
+
+func (p *ClaudeCliProvider) stripTaggedToolCalls(text string) string {
+	segments := p.parseTaggedToolCallSegments(text)
+	if len(segments) == 0 {
+		return strings.TrimSpace(text)
+	}
+
+	var sb strings.Builder
+	last := 0
+	for _, seg := range segments {
+		if seg.start > last {
+			sb.WriteString(text[last:seg.start])
+		}
+		last = seg.end
+	}
+	if last < len(text) {
+		sb.WriteString(text[last:])
+	}
+
+	return strings.TrimSpace(sb.String())
+}
+
+func isWhitespaceByte(b byte) bool {
+	return b == ' ' || b == '\n' || b == '\t' || b == '\r'
+}
+
+func isToolTagNameStart(b byte) bool {
+	return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') || b == '_'
+}
+
+func isToolTagNameChar(b byte) bool {
+	return isToolTagNameStart(b) || (b >= '0' && b <= '9')
+}
+
 // findMatchingBrace finds the index after the closing brace matching the opening brace at pos.
 func findMatchingBrace(text string, pos int) int {
 	depth := 0
+	inString := false
+	escaped := false
 	for i := pos; i < len(text); i++ {
-		if text[i] == '{' {
+		ch := text[i]
+		if inString {
+			if escaped {
+				escaped = false
+				continue
+			}
+			if ch == '\\' {
+				escaped = true
+				continue
+			}
+			if ch == '"' {
+				inString = false
+			}
+			continue
+		}
+
+		if ch == '"' {
+			inString = true
+			continue
+		}
+		if ch == '{' {
 			depth++
-		} else if text[i] == '}' {
+		} else if ch == '}' {
 			depth--
 			if depth == 0 {
 				return i + 1
