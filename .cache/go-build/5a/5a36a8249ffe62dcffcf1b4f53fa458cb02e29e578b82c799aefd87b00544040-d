@@ -1,5 +1,0 @@
-./claude_cli_provider.go
-./claude_provider.go
-./codex_provider.go
-./http_provider.go
-./types.go
